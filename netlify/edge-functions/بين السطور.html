@@ -1,0 +1,402 @@
+<html lang="ar" dir="rtl" class="h-full">
+ <head>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full theme-light">
+  ```index.html 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بين السطور</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Tajawal', sans-serif; }
+    .amiri { font-family: 'Amiri', serif; }
+    .glass-btn { background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4); transition: all 0.3s ease; }
+    .glass-btn:hover { background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.2) 100%); box-shadow: 0 6px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5); transform: translateY(-2px); }
+    .glass-card { background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+    .book-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .book-card:hover { transform: translateY(-8px) scale(1.02); }
+    .theme-light { --bg-primary: #f5e6d3; --bg-secondary: #e8d4be; --text-primary: #4a3728; --text-secondary: #6b5344; }
+    .theme-dark { --bg-primary: #3d2b1f; --bg-secondary: #2a1d14; --text-primary: #f5e6d3; --text-secondary: #d4c4b0; }
+    .themed-bg { background-color: var(--bg-primary); }
+    .themed-bg-secondary { background-color: var(--bg-secondary); }
+    .themed-text { color: var(--text-primary); }
+    .themed-text-secondary { color: var(--text-secondary); }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    .float-animation { animation: float 3s ease-in-out infinite; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .slide-in { animation: slideIn 0.5s ease-out forwards; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 4px; }
+  </style>
+  <div id="app" class="h-full themed-bg overflow-auto">
+   <header class="sticky top-0 z-50 glass-card border-0 border-b m-5 rounded-[15px]">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+     <div class="flex flex-col md:flex-row items-center gap-4">
+      <div class="flex items-center gap-3">
+       <div class="text-3xl">
+        📚
+       </div>
+       <h1 id="site-title" class="amiri text-2xl md:text-3xl font-bold themed-text">بين السطور</h1>
+      </div>
+      <div class="flex-1 w-full max-w-xl">
+       <div class="relative"><input type="text" id="search-input" placeholder="ابحث عن كتاب..." class="w-full px-5 py-3 pr-12 rounded-full glass-card themed-text placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-amber-500/50"> <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+       </div>
+      </div>
+      <div class="flex items-center gap-3"><button id="theme-toggle" class="glass-btn px-4 py-2 rounded-full themed-text flex items-center gap-2"><span id="theme-icon">🌙</span></button> <button onclick="showSection('shelf')" class="glass-btn px-4 py-2 rounded-full themed-text flex items-center gap-2"><span>📖</span></button> <button onclick="showSection('wallet')" class="glass-btn px-4 py-2 rounded-full themed-text flex items-center gap-2"><span>📊</span></button>
+      </div>
+     </div>
+    </div>
+   </header>
+   <main class="max-w-7xl mx-auto px-4 py-8">
+    <section id="books-section">
+     <div class="flex items-center justify-between mb-8">
+      <h2 class="amiri text-2xl font-bold themed-text flex items-center gap-2"><span class="text-3xl">✨</span> كتبي</h2>
+      <div class="glass-card px-4 py-2 rounded-full">
+       <span class="themed-text text-sm">عدد الكتب: <span id="books-count">0</span></span>
+      </div>
+     </div>
+     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div class="glass-card rounded-2xl p-6 lg:row-span-2">
+       <h3 class="themed-text font-bold text-lg mb-4 flex items-center gap-2"><span>📤</span> رفع كتاب جديد</h3>
+       <form class="space-y-3" onsubmit="event.preventDefault(); uploadBook();">
+        <div>
+         <label class="block themed-text text-sm font-medium mb-1">عنوان الكتاب *</label><input type="text" id="book-title" placeholder="أدخل عنوان الكتاب" class="w-full px-4 py-2 rounded-lg glass-card themed-text focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+        </div>
+        <div>
+         <label class="block themed-text text-sm font-medium mb-1">المؤلف *</label><input type="text" id="book-author" placeholder="أدخل اسم المؤلف" class="w-full px-4 py-2 rounded-lg glass-card themed-text focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+        </div>
+        <div>
+         <label class="block themed-text text-sm font-medium mb-1">النوع *</label><input type="text" id="book-genre" placeholder="مثال: رواية، تراث..." class="w-full px-4 py-2 rounded-lg glass-card themed-text focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+        </div>
+        <div>
+         <label class="block themed-text text-sm font-medium mb-1">السعر (ر.س) *</label><input type="number" id="book-price" placeholder="0" min="1" class="w-full px-4 py-2 rounded-lg glass-card themed-text focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+        </div>
+        <div>
+         <label class="block themed-text text-sm font-medium mb-1">الوصف</label><textarea id="book-description" placeholder="أضف وصفاً قصيراً للكتاب..." rows="3" class="w-full px-4 py-2 rounded-lg glass-card themed-text focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none"></textarea>
+        </div><button type="submit" class="w-full glass-btn px-6 py-3 rounded-lg themed-text font-bold bg-green-500/20 hover:bg-green-500/30">رفع الكتاب 🚀</button>
+       </form>
+      </div>
+      <div id="books-grid" class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+     </div>
+     <div id="no-results" class="hidden text-center py-16">
+      <div class="text-6xl mb-4">
+       📭
+      </div>
+      <p class="themed-text text-xl">لم تقم برفع أي كتب بعد</p>
+      <p class="themed-text-secondary mt-2">ابدأ برفع كتابك الأول! 📖</p>
+     </div>
+    </section>
+    <section id="shelf-section" class="hidden">
+     <div class="flex items-center justify-between mb-8">
+      <h2 id="shelf-title" class="amiri text-2xl font-bold themed-text flex items-center gap-2"><span class="text-3xl">📖</span> الرف</h2><button onclick="showSection('books')" class="glass-btn px-4 py-2 rounded-full themed-text">← العودة</button>
+     </div>
+     <div id="shelf-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+     <div id="empty-shelf" class="text-center py-16">
+      <div class="text-6xl mb-4 float-animation">
+       📚
+      </div>
+      <p class="themed-text text-xl mb-2">رفك فارغ!</p>
+      <p class="themed-text-secondary">أضف كتباً من القائمة لبناء رفك الخاص</p>
+     </div>
+    </section>
+    <section id="wallet-section" class="hidden">
+     <div class="flex items-center justify-between mb-8">
+      <h2 id="wallet-title" class="amiri text-2xl font-bold themed-text flex items-center gap-2"><span class="text-3xl">📊</span> إحصائياتي</h2><button onclick="showSection('books')" class="glass-btn px-4 py-2 rounded-full themed-text">← العودة</button>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <div class="text-4xl mb-2">
+        📚
+       </div>
+       <p class="themed-text-secondary text-sm mb-1">عدد كتبي</p>
+       <p id="total-books" class="amiri text-3xl font-bold themed-text">0</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <div class="text-4xl mb-2">
+        💎
+       </div>
+       <p class="themed-text-secondary text-sm mb-1">الكتب المضافة للرف</p>
+       <p id="total-purchased" class="amiri text-3xl font-bold themed-text">0</p>
+      </div>
+      <div class="glass-card rounded-2xl p-6 text-center">
+       <div class="text-4xl mb-2">
+        💰
+       </div>
+       <p class="themed-text-secondary text-sm mb-1">إجمالي الأرباح</p>
+       <p id="total-earnings" class="amiri text-3xl font-bold themed-text">0 ر.س</p>
+      </div>
+     </div>
+     <div class="glass-card rounded-2xl p-6">
+      <h3 class="themed-text font-bold text-lg mb-4 flex items-center gap-2"><span>📋</span> الكتب المضافة إلى الرف</h3>
+      <div id="transactions-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
+      <div id="no-transactions" class="text-center py-8">
+       <p class="themed-text-secondary">لم تضف أي كتب لرف المستخدمين بعد</p>
+      </div>
+     </div>
+    </section>
+   </main>
+   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass-card px-6 py-4 rounded-2xl themed-text transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <span id="toast-message"></span>
+   </div>
+  </div>
+  <script>
+    let myBooks = [];
+    let allBooks = [];
+    let purchasedBooks = [];
+    let isDarkTheme = false;
+    let isLoading = false;
+    const emojis = ['📚', '📖', '✨', '🎭', '🌟', '💫', '🎨', '🎪', '🦋', '🌺', '🔮', '🎯', '🎲', '🎸', '🎬'];
+    
+    const defaultConfig = {
+      site_title: 'بين السطور',
+      wallet_label: 'محفظتي',
+      shelf_label: 'الرف',
+      background_color: '#f5e6d3',
+      surface_color: '#e8d4be',
+      text_color: '#4a3728',
+      primary_action_color: '#d4a574',
+      secondary_action_color: '#8b7355',
+      font_family: 'Tajawal',
+      font_size: 16
+    };
+    
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+          document.getElementById('wallet-title').innerHTML = `<span class="text-3xl">📊</span> ${config.wallet_label || 'إحصائياتي'}`;
+          document.getElementById('shelf-title').innerHTML = `<span class="text-3xl">📖</span> ${config.shelf_label || defaultConfig.shelf_label}`;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            { get: () => config.background_color || defaultConfig.background_color, set: (v) => window.elementSdk.setConfig({ background_color: v }) },
+            { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => window.elementSdk.setConfig({ surface_color: v }) },
+            { get: () => config.text_color || defaultConfig.text_color, set: (v) => window.elementSdk.setConfig({ text_color: v }) }
+          ],
+          borderables: [],
+          fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => window.elementSdk.setConfig({ font_family: v }) },
+          fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => window.elementSdk.setConfig({ font_size: v }) }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['site_title', config.site_title || defaultConfig.site_title],
+          ['wallet_label', config.wallet_label || defaultConfig.wallet_label],
+          ['shelf_label', config.shelf_label || defaultConfig.shelf_label]
+        ])
+      });
+    }
+    
+    const dataHandler = {
+      onDataChanged(data) {
+        allBooks = data;
+        myBooks = data.filter(b => b.type === 'my_book');
+        purchasedBooks = data.filter(b => b.type === 'purchase');
+        renderUI();
+      }
+    };
+    
+    async function initApp() {
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) console.error('Failed to initialize data SDK');
+      }
+    }
+    
+    function renderBooks(filter = '') {
+      const grid = document.getElementById('books-grid');
+      const noResults = document.getElementById('no-results');
+      let filteredBooks = myBooks.filter(book => 
+        book.title.includes(filter) || book.author.includes(filter) || book.genre.includes(filter)
+      );
+      
+      document.getElementById('books-count').textContent = filteredBooks.length;
+      
+      if (filteredBooks.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+      
+      noResults.classList.add('hidden');
+      grid.innerHTML = filteredBooks.map((book, index) => `
+        <div class="book-card glass-card rounded-2xl overflow-hidden slide-in" style="animation-delay: ${index * 0.1}s">
+          <div class="h-40 flex items-center justify-center themed-bg-secondary"><span class="text-7xl">${emojis[Math.floor(Math.random() * emojis.length)]}</span></div>
+          <div class="p-5">
+            <h3 class="amiri text-xl font-bold themed-text mb-1 truncate">${book.title}</h3>
+            <p class="themed-text-secondary text-sm mb-1">${book.author}</p>
+            <span class="inline-block px-3 py-1 rounded-full text-xs themed-bg-secondary themed-text mb-3">${book.genre}</span>
+            <p class="themed-text-secondary text-xs mb-3 line-clamp-2">${book.description || 'بدون وصف'}</p>
+            <div class="flex items-center justify-between">
+              <span class="amiri text-2xl font-bold themed-text">${book.price} ر.س</span>
+              <button onclick="deleteBook('${book.id}')" class="glass-btn px-4 py-2 rounded-xl themed-text text-sm font-bold bg-red-500/20 hover:bg-red-500/30">حذف ✕</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function renderShelf() {
+      const grid = document.getElementById('shelf-grid');
+      const emptyShelf = document.getElementById('empty-shelf');
+      
+      if (purchasedBooks.length === 0) {
+        grid.innerHTML = '';
+        emptyShelf.classList.remove('hidden');
+        return;
+      }
+      
+      emptyShelf.classList.add('hidden');
+      grid.innerHTML = purchasedBooks.map((book, index) => `
+        <div class="book-card glass-card rounded-2xl overflow-hidden slide-in" style="animation-delay: ${index * 0.1}s">
+          <div class="h-40 flex items-center justify-center themed-bg-secondary relative">
+            <span class="text-7xl">${emojis[Math.floor(Math.random() * emojis.length)]}</span>
+            <span class="absolute top-3 right-3 bg-green-500/80 text-white text-xs px-2 py-1 rounded-full">مُلك</span>
+          </div>
+          <div class="p-5">
+            <h3 class="amiri text-xl font-bold themed-text mb-1 truncate">${book.title}</h3>
+            <p class="themed-text-secondary text-sm mb-1">${book.author}</p>
+            <span class="inline-block px-3 py-1 rounded-full text-xs themed-bg-secondary themed-text mb-3">${book.genre}</span>
+            <p class="amiri text-lg themed-text-secondary">السعر: ${book.price} ر.س</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function renderTransactions() {
+      const list = document.getElementById('transactions-list');
+      const noTrans = document.getElementById('no-transactions');
+      
+      if (purchasedBooks.length === 0) {
+        list.innerHTML = '';
+        noTrans.classList.remove('hidden');
+        return;
+      }
+      
+      noTrans.classList.add('hidden');
+      list.innerHTML = purchasedBooks.slice(0, 20).map(book => {
+        const date = new Date(book.timestamp).toLocaleDateString('ar-SA');
+        return `
+          <div class="flex items-center justify-between p-3 rounded-xl themed-bg-secondary">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">📖</span>
+              <div>
+                <p class="themed-text text-sm font-medium">${book.title}</p>
+                <p class="themed-text-secondary text-xs">${date}</p>
+              </div>
+            </div>
+            <span class="text-green-600 font-bold">+${book.price} ر.س</span>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function renderStats() {
+      document.getElementById('total-books').textContent = myBooks.length;
+      document.getElementById('total-purchased').textContent = purchasedBooks.length;
+      const totalEarnings = purchasedBooks.reduce((sum, book) => sum + book.price, 0);
+      document.getElementById('total-earnings').textContent = `${totalEarnings} ر.س`;
+    }
+    
+    function renderUI() {
+      renderBooks(document.getElementById('search-input').value);
+      renderShelf();
+      renderTransactions();
+      renderStats();
+    }
+    
+    async function uploadBook() {
+      if (isLoading) return;
+      
+      const title = document.getElementById('book-title').value.trim();
+      const author = document.getElementById('book-author').value.trim();
+      const genre = document.getElementById('book-genre').value.trim();
+      const price = parseInt(document.getElementById('book-price').value);
+      const description = document.getElementById('book-description').value.trim();
+      
+      if (!title || !author || !genre || !price || price <= 0) {
+        showToast('يرجى ملء جميع الحقول المطلوبة! ✋');
+        return;
+      }
+      
+      if (allBooks.length >= 999) {
+        showToast('تم الوصول للحد الأقصى من الكتب (999)');
+        return;
+      }
+      
+      isLoading = true;
+      const bookId = `book_${Date.now()}`;
+      const result = await window.dataSdk.create({
+        id: bookId,
+        type: 'my_book',
+        title, author, genre, price, description,
+        timestamp: new Date().toISOString()
+      });
+      isLoading = false;
+      
+      if (result.isOk) {
+        document.getElementById('book-title').value = '';
+        document.getElementById('book-author').value = '';
+        document.getElementById('book-genre').value = '';
+        document.getElementById('book-price').value = '';
+        document.getElementById('book-description').value = '';
+        showToast(`تم رفع "${title}" بنجاح! 🎉`);
+      } else {
+        showToast('حدث خطأ، حاول مرة أخرى');
+      }
+    }
+    
+    async function deleteBook(bookId) {
+      if (isLoading) return;
+      const book = myBooks.find(b => b.id === bookId);
+      if (!book) return;
+      
+      isLoading = true;
+      const result = await window.dataSdk.delete(book);
+      isLoading = false;
+      
+      if (result.isOk) {
+        showToast(`تم حذف "${book.title}" بنجاح! ✨`);
+      } else {
+        showToast('حدث خطأ، حاول مرة أخرى');
+      }
+    }
+    
+    async function buyBook(bookId) {
+      if (isLoading) return;
+      const book = myBooks.find(b => b.id === bookId);
+      if (!book) return;
+      
+      if (purchasedBooks.find(b => b.id === bookId)) {
+        showToast('هذا الكتاب موجود في رفك بالفعل! 📚');
+        return;
+      }
+      
+      if (allBooks.length >= 999) {
+        showToast('تم الوصول للحد الأقصى من المعاملات');
+        return;
+      }
+      
+      isLoading = true;
+      const result = await window.dataSdk.create({
+        id: `purchase_${Date.now()}`,
+        type: 'purchase',
+        title: book.title, author: book.author, genre: book.genre, price: book.price, description: book.description,
+        timestamp: new Date().toISOString()
+      });
+      isLoading = false;
+      
+      if (result.isOk) {
+        showToast(`تم إضافة "${book.title}" إلى رفك! 📖`);
+      } else {
+        showToast('حدث خطأ، حاول مرة أخرى');
+      }
+    }
+    
+    function showSection(section) {
+      documen
